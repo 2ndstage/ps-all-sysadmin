@@ -1,1 +1,0 @@
-﻿get-eventlog system | where-object {$_.eventid -eq 6005} | select Timegenerated, EntryType, Source, Message -first 10

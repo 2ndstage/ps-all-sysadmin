@@ -1,1 +1,0 @@
-﻿systeminfo | find /i “Original”

@@ -1,0 +1,22 @@
+$dnsrecords = Get-DnsServerResourceRecord -ZoneName “_msdcs.bosf.internal”
+
+
+
+#Bring all records for the dead DC into a single array:
+
+$deadDC = $dnsrecords | Where-Object {$_.RecordData.IPv4Address -eq “10.1.200.33” -or $_.RecordData.NameServer -eq “MKST-DC2.bosf.internal.” -or $_.RecordData.DomainName -eq “MKST-DC2.bosf.internal.”}
+
+$deadDC
+
+
+
+#Test removal with whatif:
+
+$deadDC | Remove-DnsServerResourceRecord -ZoneName “_msdcs.bosf.internal” -whatif
+
+#Combine all into a single command:
+
+Get-DnsServerResourceRecord -ZoneName “_msdcs.bosf.internal” |
+Where-Object {$_.RecordData.IPv4Address -eq "10.1.200.33"
+-or $_.RecordData.NameServer -eq “MKST-DC2.bosf.internal.” -or `
+$_.RecordData.DomainName -eq “MKST-DC2.bosf.internal.”} | Remove-DnsServerResourceRecord -ZoneName “_msdcs.bosf.internal” -force

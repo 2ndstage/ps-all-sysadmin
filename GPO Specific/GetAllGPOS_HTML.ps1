@@ -1,0 +1,1 @@
+﻿Get-GPOReport -All -ReportType html -Path C:\GPOReports\GposReport.html

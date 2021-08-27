@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 ################################################################################
 ## Script description                                                         ##
 ##                                                                            ##
@@ -105,7 +105,7 @@ function Get-DomainInfo($DomainName)
             {
 
                 # Get information about Default Domain Password Policy from the first DC on the list
-                $pwdGPO = Get-ADDefaultDomainPasswordPolicy -Server $DCListFiltered[0]
+                $pwdGPO = Get-ADDefaultDomainPasswordPolicy -Server $FSMOPDC
 
 
 
@@ -122,12 +122,12 @@ function Get-DomainInfo($DomainName)
 
 
                 # Get information about built-in domain Administrator account
-                $builtinAdmin = Get-ADuser -Identity $domainSID-500 -Server $DCListFiltered[0] -Properties Name, LastLogonDate, PasswordLastSet, PasswordNeverExpires, whenCreated, Enabled
+                $builtinAdmin = Get-ADuser -Identity $domainSID-500 -Server $FSMOPDC -Properties Name, LastLogonDate, PasswordLastSet, PasswordNeverExpires, whenCreated, Enabled
 
 
 
                 # Get total number of Domain Administrators group members
-                $domainAdminsNo = (Get-ADGroup -Identity $domainSID-512 -Server $DCListFiltered[0] | Get-ADGroupMember -Recursive | Measure-Object).Count
+                $domainAdminsNo = (Get-ADGroup -Identity $domainSID-512 -Server $FSMOPDC | Get-ADGroupMember -Recursive | Measure-Object).Count
 
 
             }
@@ -150,9 +150,11 @@ function Get-DomainInfo($DomainName)
 
         $cmp_os_2000 = 0
         $cmp_os_xp = 0
+        $cmp_os_vista = 0
         $cmp_os_7 = 0
         $cmp_os_8 = 0
         $cmp_os_81 = 0
+        $cmp_os_10 = 0
 
         $cmp_srvos_2000 = 0
         $cmp_srvos_2003 = 0
@@ -160,6 +162,8 @@ function Get-DomainInfo($DomainName)
         $cmp_srvos_2008r2 = 0
         $cmp_srvos_2012 = 0
         $cmp_srvos_2012r2 = 0
+        $cmp_srvos_2016 = 0
+        $cmp_srvos_2019 = 0
 
         # Get information about Active Directory objects
         $ou_objectsNo = (Get-ADOrganizationalUnit -Server $domain -Filter * | Measure-Object).Count
@@ -169,9 +173,11 @@ function Get-DomainInfo($DomainName)
 
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows 2000 Professional*") { $cmp_os_2000 = $cmp_os_2000 + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows XP*") { $cmp_os_xp = $cmp_os_xp + 1 } }
+        $cmp_objects | %{ if ($_.operatingSystem -like "Windows Vista*") { $cmp_os_vista = $cmp_os_vista + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows 7*") { $cmp_os_7 = $cmp_os_7 + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows 8 *") { $cmp_os_8 = $cmp_os_8 + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows 8.1*") { $cmp_os_81 = $cmp_os_81 + 1 } }
+        $cmp_objects | %{ if ($_.operatingSystem -like "Windows 10*") { $cmp_os_10 = $cmp_os_10 + 1 } }
 
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows 2000 Server*") { $cmp_srvos_2000 = $cmp_srvos_2000 + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows Server 2003*") { $cmp_srvos_2003 = $cmp_srvos_2003 + 1 } }
@@ -179,6 +185,8 @@ function Get-DomainInfo($DomainName)
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows Server 2008 R2*") { $cmp_srvos_2008r2 = $cmp_srvos_2008r2 + 1 } }
         $cmp_objects | %{ if ( ($_.operatingSystem -like "Windows Server 2012 *") -and ($_.operatingSystem -notlike "Windows Server 2012 R2*") ) { $cmp_srvos_2012 = $cmp_srvos_2012 + 1 } }
         $cmp_objects | %{ if ($_.operatingSystem -like "Windows Server 2012 R2*") { $cmp_srvos_2012r2 = $cmp_srvos_2012r2 + 1 } }
+        $cmp_objects | %{ if ($_.operatingSystem -like "Windows Server 2016*") { $cmp_srvos_2016 = $cmp_srvos_2016 + 1 } }
+        $cmp_objects | %{ if ($_.operatingSystem -like "Windows Server 2019*") { $cmp_srvos_2019 = $cmp_srvos_2019 + 1 } }
 
         $grp_objects = Get-ADGroup -Server $domain -Filter * -Properties GroupScope
         $grp_objectsNo = $grp_objects.Count
@@ -228,7 +236,8 @@ function Get-DomainInfo($DomainName)
                 Windows2008R2Domain { Write-Host -ForegroundColor green "Windows Server 2008 R2" }
                 Windows2012Domain { Write-Host -ForegroundColor green "Windows Server 2012" }
                 Windows2012R2Domain { Write-Host -ForegroundColor green "Windows Server 2012 R2" }
-                default { Write-Host -ForegroundColor red "Unknown Domain Functional Level:"$dfl }
+                Windows2016Domain { Write-Host -ForegroundColor green "Windows Server 2016" }
+                Windows2019Domain { Write-Host -ForegroundColor green "Windows Server 2019" }
                 
             }
             
@@ -431,12 +440,16 @@ function Get-DomainInfo($DomainName)
         Write-Host -ForegroundColor green $cmp_os_2000
         Write-host -ForegroundColor yellow "  Windows XP                     : " -NoNewLine
         Write-Host -ForegroundColor green $cmp_os_xp
+        Write-host -ForegroundColor yellow "  Windows Vista                  : " -NoNewLine
+        Write-Host -ForegroundColor green $cmp_os_vista
         Write-host -ForegroundColor yellow "  Windows 7                      : " -NoNewLine
         Write-Host -ForegroundColor green $cmp_os_7
         Write-host -ForegroundColor yellow "  Windows 8                      : " -NoNewLine
         Write-Host -ForegroundColor green $cmp_os_8
         Write-host -ForegroundColor yellow "  Windows 8.1                    : " -NoNewLine
         Write-Host -ForegroundColor green $cmp_os_81
+        Write-host -ForegroundColor yellow "  Windows 10                     : " -NoNewLine
+        Write-Host -ForegroundColor green $cmp_os_10
         
         Write-Host ""
         
@@ -453,6 +466,10 @@ function Get-DomainInfo($DomainName)
         Write-Host -ForegroundColor green $cmp_srvos_2012
         Write-host -ForegroundColor yellow "  Windows Server 2012R2          : " -NoNewLine
         Write-Host -ForegroundColor green $cmp_srvos_2012r2
+        Write-host -ForegroundColor yellow "  Windows Server 2016            : " -NoNewLine
+        Write-Host -ForegroundColor green $cmp_srvos_2016
+        Write-host -ForegroundColor yellow "  Windows Server 2019            : " -NoNewLine
+        Write-Host -ForegroundColor green $cmp_srvos_2019
         
         Write-Host ""
         # End of total OUs number
@@ -1010,6 +1027,8 @@ function Get-DomainInfo($DomainName)
             Windows2008R2Forest { Write-Host -ForegroundColor green "Windows Server 2008 R2" }
             Windows2012Forest { Write-Host -ForegroundColor green "Windows Server 2012" }
             Windows2012R2Forest { Write-Host -ForegroundColor green "Windows Server 2012 R2" }
+            Windows2016Forest { Write-Host -ForegroundColor green "Windows Server 2016" }
+            Windows2019Forest { Write-Host -ForegroundColor green "Windows Server 2019" }
             default { Write-Host -ForegroundColor red "Unknown Forest Functional Level:"$ffl }
         
         }

@@ -67,7 +67,7 @@
     new-itemproperty -path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\SSL 3.0\Server" -name Enabled -value 0 -PropertyType "DWord"
     
 # Secure access to Config directory (SAM Database compromise mitigation    
-    icacls %windir%\system32\config\*.* /inheritance:e 
+    icacls C:\Windows\system32\config\*.* /inheritance:e 
   
 # Disable weak ciphers and enable strong ciphers
     # Disable weak cyphers

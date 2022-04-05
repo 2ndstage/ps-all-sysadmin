@@ -1,11 +1,11 @@
 # Server-Build.ps1
 # Enables:  RDP and firewall exceptions, SMB signing enforced for server/workstation, Strong ciphers
 # Disables: Downloaded Maps Manager Service, Geolocation Service, Xbox services and tasks, SMBv1 (removes feature too), SSL2 and 3, Weak ciphers
+#
 # In progress: 
-# Determine OS and skip SMBv1, Xbox if Server 2019.
-# Ask for timezone and set. 
-# Menu to run one or all available items for OS.
-# Define Functions
+#    Ask for timezone and set. 
+#    Menu to run one or all available items for OS.
+#    Define Functions
 
 # Function - Enable RDP and firewall rules
     Write-Host "Enabling RDP and related Firewall Rules" -ForegroundColor Red -BackgroundColor Yellow
